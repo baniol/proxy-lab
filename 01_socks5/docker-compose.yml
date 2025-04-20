@@ -27,7 +27,9 @@ services:
       - ./scripts:/scripts
       - ./protocol_analyzer.py:/usr/local/bin/socks5-analyzer.py
     command: >
-      sh -c "apk add --no-cache python3 py3-pip && pip3 install --no-cache-dir argparse && chmod +x /usr/local/bin/socks5-analyzer.py && tail -f /dev/null"
+      sh -c "apk add --no-cache python3 && 
+             chmod +x /usr/local/bin/socks5-analyzer.py && 
+             tail -f /dev/null"
 
   # Wireshark/tshark for packet analysis
   analyzer:

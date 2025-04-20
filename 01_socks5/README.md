@@ -337,6 +337,72 @@ The lab includes browser-based Wireshark that can be accessed at http://localhos
 - This is misleading - the data is not actually encapsulated in SOCKS5 headers
 - If you examine the raw bytes, you'll see pure HTTP data with no SOCKS5 framing
 
+### Browser-Based Wireshark Container
+
+The lab provides Wireshark through a browser interface, which offers a convenient way to analyze network traffic without installing Wireshark on your host system.
+
+#### How Browser-Based Wireshark Works
+
+The Wireshark container (`socks-analyzer`) in this lab has several special characteristics:
+
+1. **Shared Network Namespace**:
+   ```yaml
+   network_mode: "service:socks5-server"
+   ```
+   - The analyzer container shares the entire network namespace with the SOCKS5 server
+   - This gives Wireshark access to all network interfaces, IP addresses, and socket information that the SOCKS5 server has
+   - Allows Wireshark to see all traffic passing through the SOCKS5 proxy without additional configuration
+
+2. **Required Capabilities**:
+   ```yaml
+   cap_add:
+     - NET_ADMIN
+     - NET_RAW
+   ```
+   - `NET_ADMIN`: Allows configuring network interfaces and capture settings
+   - `NET_RAW`: Provides access to raw network packets for capture
+   - These permissions let Wireshark capture packets as if it were running directly on the host
+
+3. **KasmVNC for Browser Access**:
+   - The container uses KasmVNC to provide a browser-based GUI experience
+   - KasmVNC creates a virtual desktop environment where Wireshark runs
+   - The web interface is exposed on port 3000 of your host machine
+   - All Wireshark features are available through this browser interface
+   - Performance is optimized for web delivery with modern technologies
+
+4. **Packet Capture Process**:
+   - Packets flow through the SOCKS5 server container's network interfaces
+   - Wireshark directly captures these packets via the shared network namespace
+   - The Wireshark GUI displays the captured packets in real-time
+   - The display is streamed to your browser via KasmVNC
+
+#### Using Browser-Based Wireshark
+
+1. **Accessing the Interface**:
+   - Navigate to http://localhost:3000 in your web browser
+   - The KasmVNC interface will load, showing a desktop environment
+   - Wireshark is pre-configured and ready to use
+
+2. **Tips for Effective Use**:
+   - Start a capture by selecting the appropriate interface (usually eth0)
+   - Use the display filters mentioned above to focus on SOCKS5 traffic
+   - The clipboard can be shared between your host and the Wireshark container
+   - For better performance, adjust the KasmVNC quality settings if needed
+   - Save capture files to the `/captures` directory to persist them to your host machine
+
+3. **Filtering Out Background Traffic**:
+   - You may notice traffic between containers and the Docker host gateway
+   - To focus only on SOCKS5-related traffic, use display filters like:
+     ```
+     tcp.port == 1080 or tcp.port == 80
+     ```
+   - To exclude traffic to your gateway (replace with your gateway IP):
+     ```
+     !(ip.addr == X.X.X.X)
+     ```
+
+This containerized approach provides a clean, isolated environment for packet analysis while maintaining full Wireshark functionality, accessible entirely through your web browser.
+
 ### Protocol Analyzer Tool
 
 This lab includes a specialized SOCKS5 protocol analyzer tool (`protocol_analyzer.py`) that complements Wireshark by providing detailed field-by-field explanations of SOCKS5 protocol messages. While Wireshark offers comprehensive packet capture and visualization, this tool focuses exclusively on SOCKS5 protocol structure.
