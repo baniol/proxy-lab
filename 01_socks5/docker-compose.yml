@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # SOCKS5 proxy server using Dante
+  socks5-server:
+    image: serjs/go-socks5-proxy:latest
+    container_name: socks5-server
+    environment:
+      - PROXY_USER=socksuser
+      - PROXY_PASSWORD=sockspass
+    ports:
+      - "1080:1080"
+      - "3000:3000"
+    networks:
+      - socks-net
+    restart: unless-stopped
+
+  # Client container for testing SOCKS5 connections
+  client:
+    image: alpine:latest
+    container_name: socks-client
+    depends_on:
+      - socks5-server
+    networks:
+      - socks-net
+    volumes:
+      - ./scripts:/scripts
+      - ./protocol_analyzer.py:/usr/local/bin/socks5-analyzer.py
+    command: >
+      sh -c "apk add --no-cache python3 py3-pip && pip3 install --no-cache-dir argparse && chmod +x /usr/local/bin/socks5-analyzer.py && tail -f /dev/null"
+
+  # Wireshark/tshark for packet analysis
+  analyzer:
+    image: linuxserver/wireshark:latest
+    container_name: socks-analyzer
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    network_mode: "service:socks5-server"
+    environment:
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - ./captures:/captures
+      - ./protocol_analyzer.py:/usr/local/bin/socks5-analyzer.py
+    restart: unless-stopped
+
+  # Target web server for testing
+  web-server:
+    image: nginx:alpine
+    container_name: web-server
+    volumes:
+      - ./web:/usr/share/nginx/html
+    ports:
+      - "8080:80"
+    networks:
+      - socks-net
+    restart: unless-stopped
+
+networks:
+  socks-net:
+    driver: bridge 

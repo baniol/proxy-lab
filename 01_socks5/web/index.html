@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOCKS5 Protocol Lab - Target Server</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        .container {
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .info {
+            background-color: #e8f4f8;
+            border-left: 4px solid #3498db;
+            padding: 10px 15px;
+            margin: 15px 0;
+        }
+        code {
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SOCKS5 Protocol Lab - Target Server</h1>
+        
+        <div class="success">
+            <strong>Connection Successful!</strong> Your request has successfully reached the target server through the SOCKS5 proxy.
+        </div>
+        
+        <div class="info">
+            <h3>Connection Information:</h3>
+            <div id="connection-info">
+                <p>Your request headers will appear below:</p>
+                <pre id="request-headers"></pre>
+            </div>
+        </div>
+        
+        <h3>About SOCKS5 Protocol Inspection</h3>
+        <p>
+            This page serves as a destination target to verify successful SOCKS5 proxy connections.
+            When you see this page, it confirms that your client successfully:
+        </p>
+        <ul>
+            <li>Established a connection to the SOCKS5 proxy</li>
+            <li>Negotiated the SOCKS5 protocol handshake</li>
+            <li>Requested a connection to this web server</li>
+            <li>Transferred HTTP data through the established tunnel</li>
+        </ul>
+        
+        <h3>Protocol Flow Verification</h3>
+        <p>
+            The complete SOCKS5 protocol flow includes:
+        </p>
+        <ol>
+            <li>Method negotiation (authentication selection)</li>
+            <li>Authentication (if required)</li>
+            <li>Connection request</li>
+            <li>Connection establishment</li>
+            <li>Data transfer (this HTML page)</li>
+        </ol>
+    </div>
+
+    <script>
+        // Display request headers
+        fetch('/echo-headers')
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById('request-headers').textContent = data || "No header information available";
+            })
+            .catch(err => {
+                document.getElementById('request-headers').textContent = "Could not retrieve header information";
+            });
+    </script>
+</body>
+</html> 
