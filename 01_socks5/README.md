@@ -198,6 +198,38 @@ SOCKS5 operates at the Session Layer (Layer 5) of the OSI model, but in practica
 └─────────────────────────────┘
 ```
 
+### TCP Connection Handling
+
+SOCKS5 is a connection-oriented protocol that leverages persistent TCP connections:
+
+1. **Persistent TCP Connection**:
+   - Once established, the TCP connection between client and SOCKS5 server remains open
+   - This single connection is used for the entire session, including handshake and data transfer
+   - The connection persists until explicitly closed by either the client or server
+
+2. **Connection Flow**:
+   - Client establishes TCP connection to SOCKS5 server
+   - After successful handshake, the SOCKS5 server establishes a second TCP connection to the destination
+   - SOCKS5 server maintains both connections simultaneously:
+     ```
+     [Client] <--- TCP Connection #1 ---> [SOCKS5 Server] <--- TCP Connection #2 ---> [Destination]
+     ```
+   - The server relays data between these two TCP connections without modifying the payload
+
+3. **Bidirectional Data Transfer**:
+   - The established TCP channels allow for continuous bidirectional communication
+   - The SOCKS5 server forwards data in both directions:
+     - Client to destination (requests)
+     - Destination to client (responses)
+   - As a circuit-level proxy, it maintains state about the connection but doesn't inspect application data
+
+4. **Connection Termination**:
+   - If the client closes its TCP connection to the SOCKS5 server, the server closes its connection to the destination
+   - If the destination server closes its connection, the SOCKS5 server closes its connection to the client
+   - TCP's standard teardown mechanism (FIN, FIN-ACK sequences) can be observed in both cases
+
+This persistent connection model is what makes SOCKS5 efficient for ongoing data transfers and distinguishes it from connectionless protocols. In the lab, you can observe this behavior in Wireshark by following TCP streams - you'll see that after the initial SOCKS5 handshake, the same TCP connection continues to carry all application data throughout the session.
+
 ## Using the Lab
 
 ### Basic Tests
